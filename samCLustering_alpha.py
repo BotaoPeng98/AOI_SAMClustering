@@ -363,7 +363,7 @@ if __name__ == "__main__":
     
     t_start = time.time()
     # load clip pretrained model
-    clip_pth = "./checkpoints/ViT_L_14_336px"
+    clip_pth = "./checkpoints/ViT-L-14-336px.pt"
     model = CLIPModel(model_name=clip_pth).cuda()
     # model.print_params()
     model.eval()
