@@ -285,8 +285,8 @@ if __name__ == "__main__":
     # initialize json file
     samClusterJSON = f"/usr/local/aoi/code/output/result.json"
 
-    if not os.path.exists(samClusterJSON.replace("sam_mask_cluster.json", "")):
-        os.makedirs(samClusterJSON.replace("sam_mask_cluster.json", ""))
+    if not os.path.exists(samClusterJSON.replace("result.json", "")):
+        os.makedirs(samClusterJSON.replace("result.json", ""))
     categories = [{"name": str(i), "id": i} for i in range(cluster_nums)]
     with open(samClusterJSON, "w") as f:
         init_json = {
@@ -357,11 +357,6 @@ if __name__ == "__main__":
                 save_pth=f"results/{model_type}/{img_name}",
             )
 
-        ## mask vis
-        one_mat = np.zeros_like(mask_full)
-        one_mat[:, :, 2] = 1
-        bgr_mask = np.where(mask_full > 0, one_mat, 0)
-        image_mask_vis = cv2.addWeighted(image_rgb, 1, bgr_mask * 255, 0.5, 0)
         
         ## Modify save_crop_ to output a json file which contains the mask center and corresponding image id
         export_mask_to_json(
