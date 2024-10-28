@@ -260,34 +260,30 @@ def hierarchyClustering(X, cluster_num):
 
 if __name__ == "__main__":
 
-    ## TODO: load a input of width and height of a chiplet
-    input_width = 78
-    input_height = 78
+    input_json_pth = "/opt/ml/input/config/hyperparameters.json"
+    with open(input_json_pth, "r") as f:
+        input_json = json.load(f)
+        
+    input_width = input_json["input_width"]
+    input_height = input_json["input_height"]
 
     # img_dir info
     wafer_type = "05EXL"
-    img_dirs_pth = f"./testset"
+    img_dirs_pth = f"/usr/local/aoi/inputs/dataset"
     
     img_dirs_lst = os.listdir(img_dirs_pth)
-    detect_light = "1"  # assign which light to detect
     cluster_nums = 30
-    assert detect_light in [
-        "1",
-        "2",
-        "3",
-        "4",
-    ], "detect light should be assigned as 1, 2, 3, 4"
 
     
     # load sam model
-    sam_checkpoint = "checkpoints/sam_vit_b_01ec64.pth"
+    sam_checkpoint = "/usr/local/aoi/code/checkpoints/sam_vit_b_01ec64.pth"
     model_type = "vit_b"
     device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     sam.to(device=device)
 
     # initialize json file
-    samClusterJSON = f"./output/sam_mask_cluster.json"
+    samClusterJSON = f"/usr/local/aoi/code/output/result.json"
 
     if not os.path.exists(samClusterJSON.replace("sam_mask_cluster.json", "")):
         os.makedirs(samClusterJSON.replace("sam_mask_cluster.json", ""))
@@ -300,7 +296,7 @@ if __name__ == "__main__":
         json.dump(init_json, f, ensure_ascii=False, indent=4)
 
     t_start = time.time()
-    img_pth_lst = glob.glob(img_dirs_pth + f"/IMAGE{detect_light}*.jpg")
+    img_pth_lst = glob.glob(img_dirs_pth + f"/*.jpg")
     for img_pth in tqdm.tqdm(img_pth_lst, desc=f"Segment chiplets in {img_dirs_pth}"):
         img_name = img_pth.split("/")[-1].split(".")[0]
         image_l = cv2.imread(img_pth, cv2.IMREAD_GRAYSCALE)
@@ -381,7 +377,7 @@ if __name__ == "__main__":
     
     t_start = time.time()
     # load clip pretrained model
-    clip_pth = "./checkpoints/ViT-L-14-336px.pt"
+    clip_pth = "/usr/local/aoi/code/checkpoints/ViT-L-14-336px.pt"
     model = CLIPModel(model_name=clip_pth).cuda()
     # model.print_params()
     model.eval()
