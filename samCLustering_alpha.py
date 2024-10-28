@@ -304,8 +304,9 @@ if __name__ == "__main__":
     for img_pth in tqdm.tqdm(img_pth_lst, desc=f"Segment chiplets in {img_dirs_pth}"):
         img_name = img_pth.split("/")[-1].split(".")[0]
         image_l = cv2.imread(img_pth, cv2.IMREAD_GRAYSCALE)
-        image_rgb = cv2.cvtColor(image_l, cv2.COLOR_GRAY2RGB)
-        blurred_image_rgb = cv2.GaussianBlur(image_rgb, (5, 5), 0)
+        # image_rgb = cv2.cvtColor(image_l, cv2.COLOR_GRAY2RGB)
+        # blurred_image_rgb = cv2.GaussianBlur(image_rgb, (5, 5), 0)
+        blurred_image_rgb = transform_patch(image_l)
 
         patch_x = [i for i in range(0, image_l.shape[1], 1024)]
         patch_y = [i for i in range(0, image_l.shape[0], 1024)]
@@ -323,7 +324,7 @@ if __name__ == "__main__":
             blurred_patch = transform_patch(image_patch)
             image_patchs[img_id] = {"img": blurred_patch, "start_coord": (y, x)}
             
-        mask_full = np.zeros(image_rgb.shape, np.uint8)
+        mask_full = np.zeros(blurred_image_rgb.shape, np.uint8)
 
         for idx, img_p in image_patchs.items():
             points_ = build_adaptive_points_grid(img_p["img"], anno_width=input_width, anno_height=input_height)
