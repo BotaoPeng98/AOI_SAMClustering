@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random, tqdm
 
+
 import operator
 from functools import reduce
 
@@ -17,6 +18,13 @@ from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 from torchvision.transforms import ToPILImage
 from sklearn.cluster import AgglomerativeClustering
 from models import CLIPModel
+
+
+
+def transform_patch(image_patch):
+    image_patch_rgb = cv2.cvtColor(image_patch, cv2.COLOR_GRAY2RGB)
+    blurred_patch = cv2.GaussianBlur(image_patch_rgb, (5, 5), 0)
+    return blurred_patch
 
 
 def find_bounding_contours(mask):
@@ -297,15 +305,16 @@ if __name__ == "__main__":
 
         img_id = 0
 
-        # patchfy an image
-        for x in patch_x:
-            for y in patch_y:
-                image_patch = image_l[y : y + 1024, x : x + 1024]
-                image_patch_rgb = cv2.cvtColor(image_patch, cv2.COLOR_GRAY2RGB)
-                blurred_patch = cv2.GaussianBlur(image_patch_rgb, (5, 5), 0)
-                image_patchs[img_id] = {"img": blurred_patch, "start_coord": (y, x)}
-                img_id += 1
-
+        # patchfy an image          
+        image_patchs_coor = [
+            (y, y + 1024, x, x + 1024) for x in patch_x for y in patch_y
+        ]
+        
+        for img_id, (y, y_end, x, x_end) in enumerate(image_patchs_coor):
+            image_patch = image_l[y:y_end, x:x_end]
+            blurred_patch = transform_patch(image_patch)
+            image_patchs[img_id] = {"img": blurred_patch, "start_coord": (y, x)}
+            
         mask_full = np.zeros(image_rgb.shape, np.uint8)
 
         for idx, img_p in image_patchs.items():
