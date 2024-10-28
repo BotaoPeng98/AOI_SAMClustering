@@ -76,7 +76,7 @@ def build_all_layer_point_grids(
 
 
 def build_adaptive_points_grid(
-    image
+    image, anno_width, anno_height
 ):
     image_c = image.copy()
     # get lines from image
@@ -88,6 +88,14 @@ def build_adaptive_points_grid(
     )
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
+        x_center, y_center = x + w // 2, y + h // 2
+        if (
+            x_center < anno_width // 2
+            or x_center > image.shape[1] - anno_width // 2
+            or y_center < anno_height // 2
+            or y_center > image.shape[0] - anno_height // 2
+        ):
+            continue
         # w_scale = random.uniform(0, 1)
         # h_scale = random.uniform(0, 1)
         w_scale = 0.5
@@ -318,7 +326,7 @@ if __name__ == "__main__":
         mask_full = np.zeros(image_rgb.shape, np.uint8)
 
         for idx, img_p in image_patchs.items():
-            points_ = build_adaptive_points_grid(img_p["img"])
+            points_ = build_adaptive_points_grid(img_p["img"], anno_width=input_width, anno_height=input_height)
             if len(points_[0]) == 0:
                 continue
             mask_generator_2 = SamAutomaticMaskGenerator(
